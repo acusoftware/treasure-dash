@@ -271,42 +271,123 @@ window.addEventListener("keydown", function(e) {
   }
 
 function drawPlayer() {
-  // Gölge
-  ctx.fillStyle = "rgba(0,0,0,0.2)";
+function drawPlayer() {
+  const x = player.x;
+  const y = player.y;
+  const w = player.w;
+  const h = player.h;
+
+  // Karakterin yere düşen gölgesi
+  ctx.fillStyle = "rgba(0,0,0,0.22)";
   ctx.beginPath();
   ctx.ellipse(
-    player.x + player.w / 2,
-    ground + 2,
+    x + w / 2,
+    ground + 3,
     24,
-    6,
+    7,
     0,
     0,
     Math.PI * 2
   );
   ctx.fill();
 
+  // Sırt çantası
+  ctx.fillStyle = "#70452a";
+  ctx.fillRect(x - 3, y + 25, 12, 22);
+
   // Bacaklar
-  ctx.fillStyle = "#273e7a";
-  ctx.fillRect(player.x + 4, player.y + 43, 12, 15);
-  ctx.fillRect(player.x + 23, player.y + 43, 12, 15);
+  ctx.fillStyle = "#263e73";
+  ctx.fillRect(x + 4, y + h - 15, 12, 15);
+  ctx.fillRect(x + 23, y + h - 15, 12, 15);
 
-  // Gövde
-  ctx.fillStyle = "#ff7139";
-  ctx.fillRect(player.x + 3, player.y + 20, 32, 28);
+  // Ayakkabılar
+  ctx.fillStyle = "#382c26";
+  ctx.fillRect(x + 1, y + h - 5, 16, 7);
+  ctx.fillRect(x + 21, y + h - 5, 16, 7);
 
-  // Kafa
+  // Gövde gölgesi
+  ctx.fillStyle = "#bd4729";
+  ctx.fillRect(x + 4, y + 21, 32, 28);
+
+  // Turuncu maceracı ceketi
+  ctx.fillStyle = "#ff7847";
+  ctx.fillRect(x + 5, y + 20, 29, 26);
+
+  // Ceket fermuarı
+  ctx.fillStyle = "#ffd9a1";
+  ctx.fillRect(x + 19, y + 24, 2, 19);
+
+  // Kollar
+  ctx.fillStyle = "#e8663b";
+  ctx.fillRect(x - 1, y + 24, 8, 19);
+  ctx.fillRect(x + 32, y + 24, 8, 19);
+
+  // Eller
+  ctx.fillStyle = "#ffd0a1";
+  ctx.fillRect(x - 1, y + 39, 8, 7);
+  ctx.fillRect(x + 32, y + 39, 8, 7);
+
+  // Boyun
+  ctx.fillStyle = "#e9ad7d";
+  ctx.fillRect(x + 14, y + 15, 11, 9);
+
+  // Kulaklar
+  ctx.fillStyle = "#e9ad7d";
+  ctx.beginPath();
+  ctx.arc(x + 6, y + 12, 4, 0, Math.PI * 2);
+  ctx.arc(x + 32, y + 12, 4, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Yüz
   ctx.fillStyle = "#ffd0a1";
   ctx.beginPath();
-  ctx.arc(player.x + 19, player.y + 12, 14, 0, Math.PI * 2);
+  ctx.ellipse(
+    x + 19,
+    y + 11,
+    14,
+    15,
+    0,
+    0,
+    Math.PI * 2
+  );
   ctx.fill();
 
   // Saç
-  ctx.fillStyle = "#573621";
-  ctx.fillRect(player.x + 6, player.y - 1, 26, 8);
+  ctx.fillStyle = "#493020";
+  ctx.beginPath();
+  ctx.moveTo(x + 5, y + 10);
+  ctx.lineTo(x + 6, y + 1);
+  ctx.lineTo(x + 13, y - 3);
+  ctx.lineTo(x + 27, y - 1);
+  ctx.lineTo(x + 33, y + 7);
+  ctx.lineTo(x + 29, y + 10);
+  ctx.lineTo(x + 24, y + 5);
+  ctx.lineTo(x + 13, y + 7);
+  ctx.closePath();
+  ctx.fill();
+
+  // Kaş
+  ctx.fillStyle = "#493020";
+  ctx.fillRect(x + 22, y + 8, 7, 2);
 
   // Göz
-  ctx.fillStyle = "#222";
-  ctx.fillRect(player.x + 25, player.y + 9, 3, 4);
+  ctx.fillStyle = "#222222";
+  ctx.beginPath();
+  ctx.arc(x + 26, y + 12, 2, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Gülümseme
+  ctx.strokeStyle = "#9c4d36";
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  ctx.arc(
+    x + 23,
+    y + 15,
+    5,
+    0.2,
+    1.2
+  );
+  ctx.stroke();
 }
 
 function drawCoin(c) {
