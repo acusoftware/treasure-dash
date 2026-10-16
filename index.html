@@ -1,1 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Treasure Dash</title>
 
+<style>
+* {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  margin: 0;
+  overflow: hidden;
+  background: #101a2b;
+  font-family: Arial, sans-serif;
+  color: white;
+  touch-action: manipulation;
+}
+
+canvas {
+  display: block;
+  width: 100%;
+  height: 100dvh;
+}
+
+#jumpButton {
+  position: fixed;
+  bottom: 25px;
+  right: 22px;
+  width: 90px;
+  height: 90px;
+  border: 3px solid white;
+  border-radius: 50%;
+  background: #ffb300;
+  color: #182238;
+  font-size: 18px;
+  font-weight: bold;
+  box-shadow: 0 5px 0 #b87900;
+}
+
+#jumpButton:active {
+  transform: translateY(4px);
+  box-shadow: 0 1px 0 #b87900;
+}
+</style>
+</head>
+
+<body>
+
+<canvas id="game"></canvas>
+<button id="jumpButton">JUMP!</button>
+
+<script>
+const canvas = document.getElementById("game");
+const ctx = canvas.getContext("2d");
+const jumpButton = document.getElementById("jumpButton");
+
+let W, H, ground;
+let player, obstacles, coins;
+let score, gold, speed, spawnTimer;
+let running = false;
+let gameOver = false;
+let lastTime = 0;
+
+function resize() {
+  const oldH = H || window.innerHeight;
+
+  W = canvas.width = window.innerWidth;
+  H = canvas.height = window.innerHeight;
+  ground = H * 0.78;
+
+  if (!player) {
+    player = {
+      x: W * 0.18,
+      y: ground - 48,
+      w: 34,
+      h: 48,
+      vy: 0
+    };
+  } else {
+    player.y = Math.min(player.y, ground - player.h);
+  }
+}
+
+window.addEventListener("resize", resize);
+resize();
+
+function startGame() {
+  player = {
+    x: W * 0.18,
+    y: ground - 48,
+    w: 34,
+    h: 48,
+    vy: 0
+  };
+
+  obstacles = [];
+  coins = [];
+  score = 0;
+  gold = 0;
+  speed = 5;
+  spawnTimer = 0;
+  running = true;
+  gameOver = false;
+}
+
+function jump() {
+  if (gameOver || !running) {
+    startGame();
+    return;
+  }
+
+  if (player.y >= ground - player.h - 2) {
+    player.vy = -13;
+  }
+}
+
+jumpButton.addEventListener("pointerdown", e => {
+  e.preventDefault();
+  jump();
+});
+
+canvas.addEventListener("pointerdown", e => {
+  e.preventDefault();
+  jump();
+});
+
+window.addEventListener("keydown", e => {
+  if (e.code === "Space" || e.code === "ArrowUp") {
+    e.preventDefault();
+    jump();
+  }
+});
+
+function spawnObjects() {
+  obstacles.push({
+    x: W + 20,
+    y: ground - 38,
+    w: 30,
+    h: 38
+  });
+
+  if (Math.random() > 0.25) {
+    coins.push({
+      x: W + 90,
+      y: ground - 75 - Math.random() * 65,
+      r: 11,
+      collected: false
+    });
+  }
+}
+
+function collide(a, b) {
+  return (
+    a.x < b.x + b.w &&
+    a.x + a.w > b.x &&
+    a.y < b.y + b.h &&
+    a.y + a.h > b.y
+  );
+}
+
+function drawBackground() {
+  const sky = ctx.createLinearGradient(0, 0, 0, H);
+  sky.addColorStop(0, "#173f62");
+  sky.addColorStop(1, "#4ec7b0");
+
+  ctx.fillStyle = sky;
+  ctx.fillRect(0, 0, W, H);
+
+  // Sun
+  ctx.fillStyle = "#ffe58a";
+  ctx.beginPath();
+  ctx.arc(W * 0.8, H * 0.18, 35, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Mountains
+  ctx.fillStyle = "#24566b";
+  ctx.beginPath();
+  ctx.moveTo(0, ground);
+  ctx.lineTo(W * 0.22, H * 0.34);
+  ctx.lineTo(W * 0.43, ground);
+  ctx.lineTo(W * 0.65, H * 0.42);
+  ctx.lineTo(W, ground);
+  ctx.closePath();
+  ctx.fill();
+
+  // Ground
+  ctx.fillStyle = "#286b3c";
+  ctx.fillRect(0, ground, W, H - ground);
+
+  ctx.fillStyle = "#65b845";
+  ctx.fillRect(0, ground, W, 9);
+
+  // Ground details
+  ctx.fillStyle = "#194c30";
+  for (let i = 0; i < W; i += 55) {
+    const x = (i - (score * 2) % 55);
+    ctx.fillRect(x, ground + 25, 22, 4);
+  }
+}
+
+function drawPlayer() {
+  // Body
+  ctx.fillStyle = "#ff7043";
+  ctx.fillRect(player.x, player.y + 14, player.w, player.h - 14);
+
+  // Head
+  ctx.fillStyle = "#ffd0a1";
+  ctx.beginPath();
+  ctx.arc(player.x + player.w / 2, player.y + 10, 13, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Hair
+  ctx.fillStyle = "#573b2a";
+  ctx.fillRect(player.x + 5, player.y - 3, 23, 8);
+
+  // Eyes
+  ctx.fillStyle = "#222";
+  ctx.fillRect(player.x + 22, player.y + 7, 3, 4);
+
+  // Legs
+  ctx.fillStyle = "#273b70";
+  ctx.fillRect(player.x + 3, player.y + player.h - 4, 10, 9);
+  ctx.fillRect(player.x + 21, player.y + player.h - 4, 10, 9);
+}
+
+function drawCoin(c) {
+  ctx.fillStyle = "#ffb900";
+  ctx.beginPath();
+  ctx.arc(c.x, c.y, c.r, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.strokeStyle = "#fff09a";
+  ctx.lineWidth = 3;
+  ctx.stroke();
+
+  ctx.fillStyle = "#9b6500";
+  ctx.font = "bold 14px Arial";
+  ctx.textAlign = "center";
+  ctx.fillText("$", c.x, c.y + 5);
+}
+
+function drawObstacle(o) {
+  ctx.fillStyle = "#74452b";
+  ctx.fillRect(o.x, o.y, o.w, o.h);
+
+  ctx.fillStyle = "#a66a
